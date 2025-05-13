@@ -16,6 +16,21 @@ import sys
 import argparse
 
 def sim(C1, C2, C3, mode='hi', variance=True, seed=0):
+    """Simulates the degradation and lifecycle of a battery cell based on specified conditions.
+    Parameters:
+        - C1 (int or float): First discharge current parameter influencing the simulation.
+        - C2 (int or float): Second discharge current parameter influencing the simulation.
+        - C3 (int or float): Third discharge current parameter influencing the simulation.
+        - mode (str, optional): Degradation mode of the battery. Can be 'lo', 'med', or 'hi'. Defaults to 'hi'.
+        - variance (bool, optional): If True, includes sampling variation and prediction error. Defaults to True.
+        - seed (int, optional): Seed for random number generation to ensure deterministic outputs. Defaults to 0.
+    Returns:
+        - int: Simulated battery cycle lifetime under the specified parameters and conditions.
+    Processing Logic:
+        - Defines several constant parameters based on battery characteristics and environmental conditions.
+        - Uses finite element analysis to simulate temperature distribution within the battery.
+        - Calculates degradation rates at multiple steps using Arrhenius equation, based on temperature and specified mode.
+        - Generates a simulated battery lifetime incorporating random variation where specified."""
     
     random.seed(seed*1000+C1*10+C2*20+C3*30) # deterministic for the same seed
 
@@ -109,6 +124,16 @@ def sim(C1, C2, C3, mode='hi', variance=True, seed=0):
 
     def fin_el(Tin, e_gen):
         # FINITE ELEMENT SIMULATION
+        """Finite Element Simulation function for calculating temperature distribution.
+        Parameters:
+            - Tin (numpy.ndarray): Initial temperature distribution array.
+            - e_gen (float): Rate of energy generation per unit volume.
+        Returns:
+            - numpy.ndarray: Computed temperature distribution at each radial node.
+        Processing Logic:
+            - Constructs a matrix system based on radial discretization for internal domains.
+            - Applies boundary conditions for the inward (r = 0) and outward boundaries (r = R).
+            - Solves the resulting linear equations using least squares to find temperatures."""
         mat = np.zeros((N+2,N+2))
         rhs = np.zeros((N+2,1))
 
@@ -191,6 +216,17 @@ def sim(C1, C2, C3, mode='hi', variance=True, seed=0):
 
 
 def parse_args():
+    """Parse command-line arguments for a simulator of battery lifetime.
+    Parameters:
+        - C1 (float): Constant current value 1, with a default of 1.
+        - C2 (float): Constant current value 2, with a default of 1.
+        - C3 (float): Constant current value 3, with a default of 1.
+        - seed (float): Seed value for random number generation, with a default of 1.
+    Returns:
+        - Namespace: An argparse Namespace containing the parsed arguments.
+    Processing Logic:
+        - Constructs an argument parser with a description relevant to battery lifetime simulation.
+        - Adds arguments for three constant current values and a seed, each with a default value of 1."""
 
     parser = argparse.ArgumentParser(description='Simulator for battery lifetime')
     parser.add_argument('--C1', default=1, type=float,

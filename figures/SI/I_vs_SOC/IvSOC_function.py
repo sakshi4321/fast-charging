@@ -11,6 +11,20 @@ from matplotlib import rcParams
 
 
 def plot_policy(CC1, CC2, CC3, ax,life_dict):
+    """Plot a battery charging policy using constant current phases and a final constant voltage phase.
+    Parameters:
+        - CC1 (float): The constant current rate for the first charging phase.
+        - CC2 (float): The constant current rate for the second charging phase.
+        - CC3 (float): The constant current rate for the third charging phase.
+        - ax (matplotlib.axes.Axes): The axes object where the policy is plotted.
+        - life_dict (dict): A dictionary containing battery life information such as 'oed', 'pred', 'pred_sterr', 'final', and 'final_sterr'.
+    Returns:
+        - None: The function modifies the provided 'ax' to plot the charging policy.
+    Processing Logic:
+        - Horizontal gray lines are used to indicate standard charge limits for each phase.
+        - Calculate and plot the fourth constant current phase (CC4) based on input CC values.
+        - Visual enhancement is provided using colored bands and labels for different SOC segments.
+        - Displays the calculated values from 'life_dict' as part of the plot for context."""
     
     LW = 3
     FS = rcParams['font.size']

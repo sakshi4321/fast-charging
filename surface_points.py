@@ -16,6 +16,21 @@ import matplotlib.pyplot as plt
 def plot_surface(C1, C2, C3, C4_LIMITS, DIR, filename):
     
     # Import policies
+    """Plot a surface based on multi-dimensional input data.
+    Parameters:
+        - C1 (array-like): Values for the first dimension (CC1) used to generate the mesh grid.
+        - C2 (array-like): Values for the second dimension (CC2) used to generate the mesh grid.
+        - C3 (array-like): Values for the third dimension (CC3) used in the subplot titles and calculations.
+        - C4_LIMITS (tuple): Lower and upper limits for filtering C4 values.
+        - DIR (str): Directory path to the input policy file and where the output plot file will be saved.
+        - filename (str): Specific filename used to locate the policies file and name the output plot file.
+    Returns:
+        - None: Saves the generated plot as a PNG file in the specified directory.
+    Processing Logic:
+        - Policies are read from a CSV file located in the specified directory, which is used for plotting specific points.
+        - A mesh grid is created using C1 and C2 over which the contour is plotted, where C4 values are calculated based on CC1, CC2, and CC3.
+        - Subplots are generated for each element in C3, with contour plots adjusted according to provided limits, and policies for each CC3 are highlighted.
+        - A colorbar is included to represent the contour values of CC4, assisting with visual interpretation."""
     policies = np.genfromtxt(os.path.join(DIR, 'policies_' + filename + '.csv'), delimiter=',')
     
     COLOR_LIM = [2.5,4.8]

@@ -6,8 +6,26 @@ import os
 import csv
 
 class BayesGap(object):
+	"""
+	BayesGap is a class designed for sequential decision-making in Bayesian Optimization, focusing on efficiently selecting optimal parameter configurations.
+	Parameters:
+	- args (Namespace): An object containing configuration options such as file paths and optimization parameters.
+	Processing Logic:
+	- Constructs and initializes various file paths needed for storing policy and arm data across rounds.
+	- Retrieves and sets up parameter spaces and design matrices for processing using specialized matrix transformation functions.
+	- Establishes statistical metrics and attributes necessary for Bayesian optimization, including likelihood standard deviation and confidence intervals.
+	"""
 
 	def __init__(self, args):
+		"""Initializes the class instance with given configuration parameters and sets up various file paths and attributes.
+		Parameters:
+		- args (Namespace): An argument namespace containing necessary configuration options and paths.
+		Returns:
+		- None: This constructor does not return any value.
+		Processing Logic:
+		- Constructs file paths for policy, previous round arm bounds, early prediction results, current arm bounds, and next batch based on provided round index.
+		- The parameter space and design matrix are initialized using dedicated functions returning their respective data structures.
+		- Sets instance attributes for dimensions of the design matrix, batch size, budget, round index, and statistical metrics such as likelihood standard deviation, initial beta, and epsilon."""
 
 		self.policy_file = os.path.join(args.data_dir, args.policy_file)
 		self.prev_arm_bounds_file = os.path.join(args.data_dir, args.arm_bounds_dir, str(args.round_idx-1) + '.pkl') # note this is for previous round
@@ -37,6 +55,15 @@ class BayesGap(object):
 		pass
 
 	def get_design_matrix(self, gamma):
+		"""Generate the design matrix using kernel approximation techniques.
+		Parameters:
+		- gamma (float): The parameter for the RBF kernel sampler affecting the spread of the kernel.
+		Returns:
+		- ndarray: A transformed design matrix using Nystroem kernel approximation.
+		Processing Logic:
+		- Uses Nystroem approximation to map the parameter space into a higher dimensional feature space.
+		- The `n_components` of the transformation is set to the number of arms.
+		- Ensures reproducibility by setting `random_state` to 1."""
 
 		from sklearn.kernel_approximation import (RBFSampler, Nystroem)
 		param_space = self.param_space
@@ -47,6 +74,16 @@ class BayesGap(object):
 		return X
 
 	def run(self):
+		"""Run a sequential decision-making process to select the best set of parameters or "arms" based on prior data, updating bounds and predictions iteratively.
+		Parameters:
+		- self: An instance of the class containing parameters and methods required for execution.
+		Returns:
+		- tuple or None: Parameters of the best arm selected from the parameter space, or None if it is the initial round.
+		Processing Logic:
+		- In the first round, initialize upper and lower bounds and a list of proposal arms and gaps.
+		- In subsequent rounds, load the previous round's data, update the confidence bounds, and calculate the next set of arms based on the highest expected reward.
+		- Adjusts confidence bounds based on prior iteration information.
+		- Utilizes sub-functions to select arms based on confidence intervals and predictions."""
 
 		prev_arm_bounds_file = self.prev_arm_bounds_file
 		prev_early_pred_file = self.prev_early_pred_file
@@ -61,6 +98,16 @@ class BayesGap(object):
 		param_space = self.param_space
 
 		def find_J_t(carms):
+			"""Identifies the index with the smallest value in a list of calculated bounds and returns the index and the minimum value.
+			Parameters:
+			- carms (list): List of arms that need to be considered when calculating bounds.
+			Returns:
+			- tuple: A tuple containing the index with the smallest bound difference (J_t) and the minimum bound difference value (min_B_k_t).
+			Processing Logic:
+			- The function computes B_k_t values for arms in 'carms' and sets to infinity for others.
+			- Uses `np.delete` to omit the current arm when calculating maximum of other arms' upper bounds.
+			- Converts the list B_k_ts to NumPy array for vectorized subtraction and finding minimum value.
+			- Returns the index of the arm with the smallest difference between modified upper and lower bounds."""
 
 			B_k_ts = []
 			for k in range(num_arms):
@@ -78,6 +125,16 @@ class BayesGap(object):
 
 
 		def find_j_t(carms, preselected_arm):
+			"""Find the index of the arm with the maximum upper bound, excluding a preselected arm.
+			Parameters:
+			- carms (list): List of integers representing arms to consider.
+			- preselected_arm (int): Index of the arm to exclude from consideration.
+			Returns:
+			- int: Index of the arm with the highest upper bound from the list of candidate arms.
+			Processing Logic:
+			- Generate upper bounds for each candidate arm that is not the preselected arm.
+			- Use negative infinity as the upper bound for non-candidate arms and the preselected arm, ensuring they are excluded.
+			- Determine the arm with the highest upper bound using np.argmax."""
 
 			U_k_ts = []
 			for k in range(num_arms):
@@ -181,6 +238,18 @@ class BayesGap(object):
 		return best_arm_params
 
 	def posterior_theta(self, X_t, Y_t):
+		"""Compute the posterior distribution parameters for theta given input data.
+		Parameters:
+		- X_t (np.ndarray): Feature matrix at time t, with shape (n_samples, num_dims). Represents the input data.
+		- Y_t (np.ndarray): Target vector at time t, with shape (n_samples,). Represents the observed outputs.
+		Returns:
+		- tuple: A tuple containing two elements:
+		- np.ndarray: Posterior mean vector of theta, with shape (num_dims,).
+		- np.ndarray: Posterior covariance matrix of theta, with shape (num_dims, num_dims).
+		Processing Logic:
+		- If `X_t` is None, the function returns prior mean and covariance parameters.
+		- Posterior mean is computed using the joint product of posterior covariance, transpose of X_t, and Y_t, scaled by noise variance.
+		- Posterior covariance is calculated using the inverse of the sum of scaled dot product and prior precision."""
 
 		num_dims = self.num_dims
 		sigma = self.sigma
@@ -200,6 +269,14 @@ class BayesGap(object):
 
 
 	def marginal_mu(self, posterior_theta_params):
+		"""Compute the marginal mean and variance for the given posterior distribution parameters.
+		Parameters:
+		- posterior_theta_params (tuple): A tuple containing the posterior mean and covariance matrix.
+		Returns:
+		- tuple: A tuple containing the calculated marginal mean and marginal variance.
+		Processing Logic:
+		- The marginal mean is computed as the dot product between matrix X and the posterior mean vector.
+		- The marginal variance is calculated by multiplying the dot product of X and the posterior covariance matrix with X, then summing the result across axis 1."""
 
 		X = self.X
 		posterior_mean, posterior_covar = posterior_theta_params
@@ -237,6 +314,15 @@ class BayesGap(object):
 		return policies[:, :3]
 
 def parse_args():
+	"""Parse command-line arguments for a closed-loop optimization framework.
+	Parameters:
+	- None
+	Returns:
+	- argparse.Namespace: A namespace containing parsed command-line arguments.
+	Processing Logic:
+	- Allows specification of input files and directories for policy, data, arm bounds, early prediction, and next batch.
+	- Supports setting initial random seed, time budget, batch size, and exploration parameters.
+	- Handles Gaussian kernel parameters and standardization statistics for lifetime data."""
 
 	parser = argparse.ArgumentParser(description='Closed-Loop Optimization with early prediction and Bayes Gap.')
 
@@ -273,6 +359,16 @@ def parse_args():
 
 
 def main():
+	"""Main function to execute the Bayesian optimization process.
+	Parameters:
+	- None
+	Returns:
+	- None
+	Processing Logic:
+	- Sets the seed and print options for numerical operations.
+	- Checks the existence of required directories within the specified data directory.
+	- Initializes a Bayesian optimization agent and runs the process to determine best parameters.
+	- If not the first round, simulates the lifetime of the best 'arm' using the data simulator and logs the outcome."""
 
 	args = parse_args()
 
