@@ -278,6 +278,15 @@ with open('fig4_plot_data.pkl', 'rb') as infile:
         data_dict = pickle.load(infile)
 
 def plot_4c(ax):
+    """Plots data points with error bars on a given matplotlib axes object using specific plotting styles and labels related to cycle life optimization (CLO) approaches.
+    Parameters:
+        - ax (matplotlib.axes.Axes): The axes object on which the data points and error bars will be plotted.
+    Returns:
+        - None: This function modifies the input axes object by adding plots to it but does not return any value.
+    Processing Logic:
+        - Sets the property cycle for the axes based on a predefined style.
+        - Plots several sets of error bars that represent different CLO approaches without early prediction and using random protocols or multi-armed bandit (MAB) methods.
+        - Each error bar plot is associated with specific labels and visual styles to differentiate the approaches."""
     ax.set_prop_cycle(plt.style.library['bmh']['axes.prop_cycle'])
     
     # Dotted line for best protocol

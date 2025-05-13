@@ -133,6 +133,15 @@ def init_plot(ax):
     ax.set_prop_cycle(custom_cycler)
 
 def format_lifetimes_plot(r):
+    """Format the lifetimes plot with specified x and y limits, axis aspect ratio, ticks, and annotation.
+    Parameters:
+        - r (float): The correlation coefficient to be annotated on the plot.
+    Returns:
+        - None: This function does not return any value.
+    Processing Logic:
+        - Sets equal aspect ratio for x and y axes to ensure a 1:1 aspect visual on the plot.
+        - Configures specific ticks for both x and y axes to enhance readability.
+        - Annotates the plot with the correlation coefficient value at a specified location."""
     plt.xlim([0,upper_lim])
     plt.ylim([0,upper_lim])
     ax0.set_aspect('equal', 'box')

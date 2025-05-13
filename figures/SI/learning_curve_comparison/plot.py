@@ -67,6 +67,16 @@ klein_heldout_true = '1852 2237 1709  636 1054  880  862  691  534 1014  854  84
 klein_heldout_true = np.array([float(i) for i in klein_heldout_true.split()])
 
 def format_lifetimes_plot(r):
+    """Format the plot with specific axis limits, aspect ratio, tick marks, and annotation.
+    Parameters:
+        - r (float): The correlation coefficient to be displayed in the plot annotation.
+    Returns:
+        - None: The function modifies the plot directly and does not return a value.
+    Processing Logic:
+        - Sets both x and y axis limits to the predefined variable 'upper_lim'.
+        - Sets aspect ratio to 'equal' within a box layout for consistent visual scaling.
+        - Defines specific tick marks for both axes.
+        - Annotates the plot with the correlation coefficient value formatted to two decimal places."""
     plt.xlim([0,upper_lim])
     plt.ylim([0,upper_lim])
     ax0.set_aspect('equal', 'box')

@@ -57,6 +57,18 @@ def text(x1,y1,x2,y2,k):
                 bbox=dict(boxstyle="round", fc="w"))
 
 def arrow(x1,y1,x2,y2):
+    """Draws an arrow annotation between two points on a matplotlib figure.
+    Parameters:
+        - x1 (float): The x-coordinate of the starting point of the arrow.
+        - y1 (float): The y-coordinate of both the starting and ending points of the arrow.
+        - x2 (float): The x-coordinate of the ending point of the arrow.
+        - y2 (float): The y-coordinate of the ending point of the arrow, controls vertical placement.
+    Returns:
+        - None: The function modifies the plot by adding an annotation and does not return any values.
+    Processing Logic:
+        - Uses `figure fraction` to position the annotation relative to the entire figure.
+        - Specifies `arc3,rad=-1` for a curved arrow effect with a radial offset.
+        - `relpos` parameter controls the positioning of the arrow's tail relative to the annotation box."""
     ax.annotate("", xy=(x2, y1), xycoords='figure fraction',
                 xytext=(x1, y1), textcoords='figure fraction',
                 size=20, va="center", ha="center",
